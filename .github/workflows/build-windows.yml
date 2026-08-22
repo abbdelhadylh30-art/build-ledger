@@ -1,0 +1,62 @@
+name: Build Windows .exe
+
+# Triggers when you push a tag like `v1.0.0` OR manually from the Actions tab.
+# The .exe + .msi installers are uploaded to a GitHub Release on the tagged version.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Build Ledger ${{ github.ref_name }}'
+          releaseBody: |
+            ## Build Ledger ${{ github.ref_name }}
+
+            Download `Build-Ledger_*.exe` (NSIS installer) or `Build-Ledger_*.msi` (MSI installer) below.
+            Double-click to install — Windows 10/11 with WebView2 (preinstalled on most systems).
+
+            If you just want to use the app locally without installing, the PWA build also works:
+            ```bash
+            npm install
+            npm run build
+            npx serve out
+            ```
+            Then open http://localhost:3000 and click "Install" in the address bar.
+          releaseDraft: false
+          prerelease: false

@@ -1,0 +1,9 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default capabilities for the main window. Build Ledger is fully client-side, so it doesn't need any Tauri-specific permissions.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default"
+  ]
+}
