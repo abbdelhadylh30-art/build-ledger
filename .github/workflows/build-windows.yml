@@ -41,14 +41,15 @@ jobs:
           releaseName: 'Build Ledger ${{ github.ref_name }}'
           releaseBody: |
             ## Build Ledger ${{ github.ref_name }}
+
             Download `Build-Ledger_*.exe` (NSIS installer) or `Build-Ledger_*.msi` (MSI installer) below.
-            Double-click to install — Windows 10/11 with WebView2 (preinstalled on most systems).
+            Double-click to install - Windows 10/11 with WebView2 (preinstalled on most systems).
+
             If you just want to use the app locally without installing, the PWA build also works:
-```bash
             npm install
             npm run build
             npx serve out
-```
+
             Then open http://localhost:3000 and click "Install" in the address bar.
           releaseDraft: false
           prerelease: false
