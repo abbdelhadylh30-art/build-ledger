@@ -1,15 +1,13 @@
 [package]
-name = "build-ledger"
+name = "stackmint-hub"
 version = "1.0.0"
-description = "Local-first PWA for tracking the projects you build"
+description = "Stackmint Studio — portfolio & launcher"
 authors = ["you"]
 edition = "2021"
 rust-version = "1.77.2"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [lib]
-name = "build_ledger_lib"
+name = "stackmint_hub_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -21,7 +19,6 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 [features]
-# This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
 
 [profile.release]

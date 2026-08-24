@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Build Ledger — Project Tracker",
+  title: "Build Ledger — Projects + Campaigns Tracker",
   description:
-    "Local-first PWA to track projects you build, the AI tools you used, where they're stored, and whether they're in your portfolio or delivered to clients.",
+    "Local-first PWA for tracking the projects you build AND your marketing campaigns across social media. Plan with a calendar, track engagement, hit your goals.",
   applicationName: "Build Ledger",
   manifest: "/manifest.json",
   appleWebApp: {

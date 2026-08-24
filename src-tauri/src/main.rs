@@ -1,6 +1,5 @@
-// Prevents an additional console window on Windows in release builds.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    build_ledger_lib::run()
+    stackmint_hub_lib::run()
 }

@@ -1,7 +1,8 @@
-"""Generate PWA + Tauri icons for Build Ledger."""
+"""Generate PWA + Tauri icons for Stackmint Studio."""
 
 from PIL import Image, ImageDraw
 import os
+import math
 
 OUT_DIR = "/home/z/my-project/public/icons"
 SRC_DIR = "/home/z/my-project/src-tauri/icons"
@@ -23,8 +24,9 @@ def make_gradient(size, c1, c2):
 
 
 def make_icon(size, maskable=False):
-    c1 = (139, 92, 246)
-    c2 = (217, 70, 239)
+    # Stackmint brand: violet -> fuchsia gradient (premium feel)
+    c1 = (139, 92, 246)   # violet-500
+    c2 = (217, 70, 239)   # fuchsia-500
 
     img = make_gradient(size, c1, c2).convert("RGBA")
 
@@ -36,21 +38,29 @@ def make_icon(size, maskable=False):
     overlay = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
 
-    bar_w = max(2, glyph_size // 5)
-    gap = max(1, bar_w // 2)
-    total_w = 3 * bar_w + 2 * gap
-    start_x = (size - total_w) // 2
+    # Draw a 4-pointed sparkle/star shape (Stackmint logo)
+    cx = size // 2
+    cy = size // 2
+    radius = glyph_size // 2
 
-    heights = [int(glyph_size * 0.7), int(glyph_size * 0.5), int(glyph_size * 0.85)]
-    base_y = (size + max(heights)) // 2
+    # Main 4-point star
+    points = []
+    for i in range(8):
+        angle = i * math.pi / 4 - math.pi / 2
+        r = radius if i % 2 == 0 else radius // 3
+        x = cx + int(r * math.cos(angle))
+        y = cy + int(r * math.sin(angle))
+        points.append((x, y))
+    draw.polygon(points, fill=(255, 255, 255, 245))
 
-    radius = max(1, bar_w // 3)
-    for i, h in enumerate(heights):
-        x0 = start_x + i * (bar_w + gap)
-        y0 = base_y - h
-        x1 = x0 + bar_w
-        y1 = base_y
-        draw.rounded_rectangle([x0, y0, x1, y1], radius=radius, fill=(255, 255, 255, 240))
+    # Small dot accent (top-right)
+    dot_r = max(2, radius // 8)
+    dot_x = cx + int(radius * 0.7)
+    dot_y = cy - int(radius * 0.7)
+    draw.ellipse(
+        [dot_x - dot_r, dot_y - dot_r, dot_x + dot_r, dot_y + dot_r],
+        fill=(255, 255, 255, 230),
+    )
 
     return Image.alpha_composite(img, overlay)
 
@@ -73,13 +83,11 @@ favicon_ico = make_icon(48, maskable=False)
 favicon_ico.save("/home/z/my-project/public/favicon.ico", format="ICO", sizes=[(16, 16), (32, 32), (48, 48)])
 print("  OK favicon.ico")
 
-# --- Tauri source icon (1024x1024 PNG) ---
-# Tauri's `tauri icon` command uses this to generate all required sizes.
+# Tauri icons
 src_1024 = make_icon(1024, maskable=False)
 src_1024.save(os.path.join(SRC_DIR, "app-icon.png"), "PNG", optimize=True)
 print(f"  OK app-icon.png (1024x1024 — Tauri source)")
 
-# Pre-generate the sizes Tauri needs (in case user can't run `tauri icon`)
 for size in [32, 128]:
     img = make_icon(size, maskable=False)
     img.save(os.path.join(SRC_DIR, f"{size}x{size}.png"), "PNG", optimize=True)
@@ -88,16 +96,12 @@ img = make_icon(256, maskable=False)
 img.save(os.path.join(SRC_DIR, "128x128@2x.png"), "PNG", optimize=True)
 print(f"  OK 128x128@2x.png")
 
-# Generate .ico for Windows (Tauri requires icon.ico)
 ico = make_icon(256, maskable=False)
 ico.save(os.path.join(SRC_DIR, "icon.ico"), format="ICO", sizes=[(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
 print("  OK icon.ico (Windows)")
 
-# Generate .icns for macOS (Tauri requires icon.icns) — using PNG fallback
-# Note: PIL doesn't support .icns natively on Linux; user can run `tauri icon` to regenerate
-# We'll create a placeholder by copying a 512x512 PNG
 icns_src = make_icon(512, maskable=False)
-icns_src.save(os.path.join(SRC_DIR, "icon.icns"), format="PNG")  # Not a real .icns but Tauri will skip on Linux/Windows builds
-print("  OK icon.icns (placeholder — rebuild with `npm run tauri icon` for macOS)")
+icns_src.save(os.path.join(SRC_DIR, "icon.icns"), format="PNG")
+print("  OK icon.icns (placeholder)")
 
-print("\nAll icons generated.")
+print("\nAll Stackmint icons generated.")
