@@ -140,6 +140,15 @@ export function getGoalTypeMeta(value: GoalType) {
   return GOAL_TYPES.find((g) => g.value === value) ?? GOAL_TYPES[0]
 }
 
+// A campaign only counts as having a real, checkable goal if a target > 0 was set.
+export function hasGoal(campaign: Pick<Campaign, 'goalTarget'>): boolean {
+  return campaign.goalTarget > 0
+}
+
+export function isGoalMet(campaign: Pick<Campaign, 'goalCurrent' | 'goalTarget'>): boolean {
+  return hasGoal(campaign) && campaign.goalCurrent >= campaign.goalTarget
+}
+
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric' })
 }

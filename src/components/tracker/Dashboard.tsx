@@ -13,7 +13,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts'
-import { FolderKanban, Sparkles, Trophy, Briefcase, Megaphone, Eye, MousePointerClick, Calendar as CalendarIcon } from 'lucide-react'
+import { FolderKanban, Sparkles, Trophy, Briefcase, Megaphone, Eye, MousePointerClick, Calendar as CalendarIcon, Target } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useProjectsStore, selectStats } from '@/store/projects-store'
 import { useMarketingStore, selectMarketingStats } from '@/store/marketing-store'
@@ -164,6 +164,13 @@ export function Dashboard() {
           <StatCard icon={<CalendarIcon className="h-5 w-5" />} label="Scheduled posts" value={mStats.scheduledPosts} accent="#6366f1" delay={0.3} />
           <StatCard icon={<Eye className="h-5 w-5" />} label="Total impressions" value={mStats.totalImpressions.toLocaleString()} accent="#06b6d4" delay={0.36} />
           <StatCard icon={<MousePointerClick className="h-5 w-5" />} label="Total clicks" value={mStats.totalClicks.toLocaleString()} accent="#f59e0b" delay={0.42} />
+          <StatCard
+            icon={<Target className="h-5 w-5" />}
+            label={mStats.goalsTracked > 0 ? `Goals met (${mStats.goalsMet}/${mStats.goalsTracked})` : 'Goals met'}
+            value={mStats.successRate !== null ? `${mStats.successRate}%` : '—'}
+            accent="#10b981"
+            delay={0.48}
+          />
         </div>
       )}
 

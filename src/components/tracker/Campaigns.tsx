@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Plus, Pencil, ExternalLink, Target, Calendar as CalendarIcon, MessageSquare } from 'lucide-react'
+import { Search, Plus, Pencil, ExternalLink, Target, Calendar as CalendarIcon, MessageSquare, CheckCircle2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -20,6 +20,7 @@ import {
   getPlatformMeta,
   getGoalTypeMeta,
   formatDate,
+  isGoalMet,
   type Campaign,
   type Post,
   type CampaignStatus,
@@ -123,6 +124,7 @@ export function CampaignsView({
             const goal = getGoalTypeMeta(campaign.goalType)
             const campaignPosts = getPostsForCampaign(campaign.id)
             const pct = campaign.goalTarget > 0 ? Math.min(100, (campaign.goalCurrent / campaign.goalTarget) * 100) : 0
+            const goalMet = isGoalMet(campaign)
 
             return (
               <motion.div
@@ -149,6 +151,15 @@ export function CampaignsView({
                         )}
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
+                        {goalMet && (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[11px] font-medium text-emerald-400"
+                            title="Goal target reached"
+                          >
+                            <CheckCircle2 className="h-3 w-3" />
+                            Goal met
+                          </span>
+                        )}
                         <span
                           className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
                           style={{ background: `${status.color}22`, color: status.color }}
@@ -188,7 +199,7 @@ export function CampaignsView({
                         <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                           <div
                             className="h-full rounded-full transition-all"
-                            style={{ width: `${pct}%`, background: campaign.color }}
+                            style={{ width: `${pct}%`, background: goalMet ? '#10b981' : campaign.color }}
                           />
                         </div>
                       </div>
@@ -260,7 +271,7 @@ export function CampaignsView({
       {campaigns.length === 0 && standalonePosts.length === 0 && (
         <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center">
           <Button
-            onClick={onNewPost}
+            onClick={() => onNewPost()}
             variant="ghost"
             className="text-white/60 hover:bg-white/5 hover:text-white"
           >

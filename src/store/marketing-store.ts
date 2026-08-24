@@ -3,6 +3,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Campaign, Post } from '@/lib/marketing'
+import { hasGoal, isGoalMet } from '@/lib/marketing'
 
 interface MarketingState {
   campaigns: Campaign[]
@@ -134,7 +135,15 @@ export function selectMarketingStats(campaigns: Campaign[], posts: Post[]) {
     target: c.goalTarget,
     pct: c.goalTarget > 0 ? Math.min(100, (c.goalCurrent / c.goalTarget) * 100) : 0,
     color: c.color,
+    met: isGoalMet(c),
   }))
+
+  // Success rate: only campaigns that actually set a target count toward this.
+  // Campaigns still at 'idea'/'planning' with no target don't drag the rate down.
+  const campaignsWithGoals = campaigns.filter(hasGoal)
+  const goalsMet = campaignsWithGoals.filter(isGoalMet).length
+  const goalsTracked = campaignsWithGoals.length
+  const successRate = goalsTracked > 0 ? Math.round((goalsMet / goalsTracked) * 100) : null
 
   return {
     activeCampaigns,
@@ -145,5 +154,8 @@ export function selectMarketingStats(campaigns: Campaign[], posts: Post[]) {
     totalEngagement,
     byPlatform,
     goalProgress,
+    goalsMet,
+    goalsTracked,
+    successRate,
   }
 }
