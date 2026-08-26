@@ -177,13 +177,21 @@ This means:
 
 ## Features
 
-- **Dashboard** with stat cards (total / in portfolio / delivered / for clients), bar chart of AI tools used, pie chart of storage locations, and animated status breakdown
+- **Dashboard** with stat cards (total / in portfolio / delivered / for clients), bar chart of AI tools used, pie chart of storage locations, animated status breakdown, **client pipeline funnel** chart, and merged recent-activity feed (projects + campaigns + clients)
 - **Projects list** with search, filters (storage / status / portfolio), and card grid
-- **Add/edit form** with AI tool multi-select, conditional client name field, tags, repo/live URLs, notes, and portfolio toggle
+- **Add/edit form** with AI tool multi-select, conditional client name field, tags, repo/live URLs, markdown notes, and portfolio toggle
+- **Clients CRM (new in v1.4.0)** — full client lifecycle: prospect → communication log (method + outcome + notes per touch) → won/lost, with a pipeline kanban board across all 6 stages. Won prospects convert into tracked Build Ledger projects in one click (client name + client status auto-set, client.projectId back-linked, project form pre-filled).
+- **Project detail drawer** — slide-over with description, AI tools, tags, client, repo/live links, linked campaigns, recent posts, and markdown notes
+- **Client detail drawer** — slide-over with contact meta, follow-up badge, linked-project CTA, full communications timeline, inline "Log" form, and markdown notes
+- **Calendar** — month grid with drag-and-drop rescheduling, day detail dialog, per-platform filters, and upcoming-this-week strip
+- **Activity timeline** — merged feed of project / campaign / post / client events with per-entity filter chips
+- **Command palette** (⌘K) — global search across all entity types + quick actions (navigate / create / edit / export)
+- **Keyboard-first** — `n` creates per tab, `/` focuses search, `Esc` closes overlay chain, `?` opens shortcuts reference
+- **Onboarding dialog** on first visit with sample data seeding (6 projects, 6 clients across all stages, 4 campaigns, 16 posts)
 - **Local-first**: all data in localStorage — no backend, no internet required
 - **PWA**: installable from any modern browser
 - **Tauri**: ships as a real native Windows .exe
-- **Export/Import** to JSON for backups and migration between devices
+- **Export/Import** to JSON for backups and migration between devices (round-trips projects + clients + campaigns + posts)
 
 ---
 

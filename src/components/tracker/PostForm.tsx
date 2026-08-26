@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { X, Trash2, Save } from 'lucide-react'
+import { X, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { DeleteButton } from './DeleteButton'
+import { MarkdownNotesEditor } from './MarkdownNotesEditor'
 import {
   Select,
   SelectContent,
@@ -29,7 +31,7 @@ interface PostFormProps {
   initial?: Post | null
   campaignOptions?: { id: string; name: string; color: string }[]
   defaultCampaignId?: string
-  defaultDate?: string  // ISO — when adding from calendar
+  defaultDate?: string  // ISO — when adding from calendar (truncated to YYYY-MM-DD for the date input)
 }
 
 function buildInitial(initial?: Post | null, defaultCampaignId?: string, defaultDate?: string) {
@@ -40,7 +42,7 @@ function buildInitial(initial?: Post | null, defaultCampaignId?: string, default
       title: '',
       content: '',
       status: 'idea' as PostStatus,
-      scheduledDate: defaultDate || '',
+      scheduledDate: defaultDate ? defaultDate.split('T')[0] : '',
       postedDate: '',
       postUrl: '',
       impressions: '',
@@ -317,15 +319,19 @@ export function PostForm({
             </div>
           </div>
 
-          {/* Notes */}
+          {/* Notes — markdown editor */}
           <div className="space-y-2">
-            <Label className="text-white/80">Notes</Label>
-            <Textarea
+            <Label className="flex items-center gap-1.5 text-white/80">
+              Notes
+              <span className="rounded-full bg-violet-500/15 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider text-violet-300">
+                Markdown
+              </span>
+            </Label>
+            <MarkdownNotesEditor
               value={form.notes}
-              onChange={(e) => update('notes', e.target.value)}
-              placeholder="Reminders, follow-ups, what worked..."
-              rows={2}
-              className="resize-none border-white/10 bg-white/5 text-white"
+              onChange={(v) => update('notes', v)}
+              placeholder="Reminders, follow-ups, what worked…\n\n**Markdown supported:** headings, lists, `code`, - [ ] tasks…"
+              rows={4}
             />
           </div>
         </div>
@@ -333,14 +339,10 @@ export function PostForm({
         {/* Footer */}
         <div className="flex items-center justify-between gap-2 border-t border-white/10 px-6 py-4">
           {isEdit && onDelete ? (
-            <Button
-              variant="ghost"
-              onClick={() => { onDelete(); onClose() }}
-              className="text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
-            >
-              <Trash2 className="mr-1 h-4 w-4" />
-              Delete
-            </Button>
+            <DeleteButton
+              entityLabel="post"
+              onConfirm={() => { onDelete(); onClose() }}
+            />
           ) : (
             <div />
           )}

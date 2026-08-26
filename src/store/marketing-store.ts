@@ -3,7 +3,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Campaign, Post } from '@/lib/marketing'
-import { hasGoal, isGoalMet } from '@/lib/marketing'
+import { hasGoal, isGoalMet, getGoalTypeMeta } from '@/lib/marketing'
 
 interface MarketingState {
   campaigns: Campaign[]
@@ -16,6 +16,11 @@ interface MarketingState {
   deletePost: (id: string) => void
   movePost: (postId: string, newDate: string) => void  // for drag-and-drop calendar
   seedIfEmpty: (campaigns: Campaign[], posts: Post[]) => void
+  importData: (
+    campaigns: Campaign[],
+    posts: Post[],
+    mode: 'merge' | 'replace',
+  ) => { added: number; skipped: number }
   clearAll: () => void
 }
 
@@ -29,7 +34,7 @@ function now(): string {
 
 export const useMarketingStore = create<MarketingState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       campaigns: [],
       posts: [],
 
@@ -96,6 +101,45 @@ export const useMarketingStore = create<MarketingState>()(
         })
       },
 
+      importData: (incomingCampaigns, incomingPosts, mode) => {
+        if (mode === 'replace') {
+          // Unlink posts whose campaign no longer exists after replace
+          const ids = new Set(incomingCampaigns.map((c) => c.id))
+          const cleanedPosts = incomingPosts.map((p) =>
+            p.campaignId && !ids.has(p.campaignId) ? { ...p, campaignId: undefined } : p,
+          )
+          set({ campaigns: incomingCampaigns, posts: cleanedPosts })
+          return { added: incomingCampaigns.length + cleanedPosts.length, skipped: 0 }
+        }
+
+        const existingCampaignIds = new Set(get().campaigns.map((c) => c.id))
+        const existingPostIds = new Set(get().posts.map((p) => p.id))
+        const newCampaigns = incomingCampaigns.filter((c) => !existingCampaignIds.has(c.id))
+        const newPosts = incomingPosts.filter((p) => !existingPostIds.has(p.id))
+
+        // A merged post may reference a campaign that exists in neither set — unlink it
+        const validCampaignIds = new Set([
+          ...existingCampaignIds,
+          ...newCampaigns.map((c) => c.id),
+        ])
+        const safeNewPosts = newPosts.map((p) =>
+          p.campaignId && !validCampaignIds.has(p.campaignId)
+            ? { ...p, campaignId: undefined }
+            : p,
+        )
+
+        set((state) => ({
+          campaigns: [...newCampaigns, ...state.campaigns],
+          posts: [...safeNewPosts, ...state.posts],
+        }))
+        return {
+          added: newCampaigns.length + safeNewPosts.length,
+          skipped:
+            (incomingCampaigns.length - newCampaigns.length) +
+            (incomingPosts.length - newPosts.length),
+        }
+      },
+
       clearAll: () => set({ campaigns: [], posts: [] }),
     }),
     {
@@ -134,8 +178,12 @@ export function selectMarketingStats(campaigns: Campaign[], posts: Post[]) {
     current: c.goalCurrent,
     target: c.goalTarget,
     pct: c.goalTarget > 0 ? Math.min(100, (c.goalCurrent / c.goalTarget) * 100) : 0,
+    // Raw (uncapped) percentage — used to detect overachievement
+    rawPct: c.goalTarget > 0 ? (c.goalCurrent / c.goalTarget) * 100 : 0,
     color: c.color,
     met: isGoalMet(c),
+    unit: getGoalTypeMeta(c.goalType).unit,
+    typeLabel: getGoalTypeMeta(c.goalType).label,
   }))
 
   // Success rate: only campaigns that actually set a target count toward this.

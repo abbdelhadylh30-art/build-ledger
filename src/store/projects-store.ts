@@ -11,6 +11,7 @@ interface ProjectsState {
   deleteProject: (id: string) => void
   togglePortfolio: (id: string) => void
   seedIfEmpty: (samples: Project[]) => void
+  importData: (items: Project[], mode: 'merge' | 'replace') => { added: number; skipped: number }
   clearAll: () => void
 }
 
@@ -24,7 +25,7 @@ function now(): string {
 
 export const useProjectsStore = create<ProjectsState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       projects: [],
 
       addProject: (data) => {
@@ -71,6 +72,18 @@ export const useProjectsStore = create<ProjectsState>()(
           if (state.projects.length > 0) return state
           return { projects: samples }
         })
+      },
+
+      importData: (items, mode) => {
+        if (mode === 'replace') {
+          set({ projects: items })
+          return { added: items.length, skipped: 0 }
+        }
+        const existingIds = new Set(get().projects.map((p) => p.id))
+        const fresh = items.filter((p) => !existingIds.has(p.id))
+        const skipped = items.length - fresh.length
+        set((state) => ({ projects: [...fresh, ...state.projects] }))
+        return { added: fresh.length, skipped }
       },
 
       clearAll: () => set({ projects: [] }),

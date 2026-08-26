@@ -1,10 +1,15 @@
 'use client'
 
-import { Search, ExternalLink, Github, Pencil, Star } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { Search, ExternalLink, Github, Pencil, Star, ArrowUpDown, StickyNote, ChevronDown } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import type { ProjectSort } from './TrackerApp'
+import { Markdown } from './Markdown'
+import { EmptyState } from './EmptyState'
+import { timeAgo } from '@/lib/time'
 import {
   Select,
   SelectContent,
@@ -32,23 +37,11 @@ interface ProjectListProps {
   onFilterStatusChange: (v: ClientStatus | 'all') => void
   filterPortfolio: 'all' | 'in' | 'out'
   onFilterPortfolioChange: (v: 'all' | 'in' | 'out') => void
+  sortBy: ProjectSort
+  onSortByChange: (v: ProjectSort) => void
   onEdit: (p: Project) => void
   onTogglePortfolio: (id: string) => void
-}
-
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime()
-  const sec = Math.floor(diff / 1000)
-  if (sec < 60) return 'just now'
-  const min = Math.floor(sec / 60)
-  if (min < 60) return `${min}m ago`
-  const hr = Math.floor(min / 60)
-  if (hr < 24) return `${hr}h ago`
-  const day = Math.floor(hr / 24)
-  if (day < 30) return `${day}d ago`
-  const mo = Math.floor(day / 30)
-  if (mo < 12) return `${mo}mo ago`
-  return `${Math.floor(mo / 12)}y ago`
+  onOpenProject: (p: Project) => void
 }
 
 export function ProjectList({
@@ -61,9 +54,14 @@ export function ProjectList({
   onFilterStatusChange,
   filterPortfolio,
   onFilterPortfolioChange,
+  sortBy,
+  onSortByChange,
   onEdit,
   onTogglePortfolio,
+  onOpenProject,
 }: ProjectListProps) {
+  const [notesOpenId, setNotesOpenId] = useState<string | null>(null)
+
   return (
     <div className="space-y-4">
       {/* Filters */}
@@ -71,13 +69,14 @@ export function ProjectList({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
           <Input
+            id="project-search"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search projects, tags, AI tools..."
+            placeholder="Search projects, tags, AI tools...  ( / )"
             className="border-white/10 bg-white/5 pl-9 text-white placeholder:text-white/40"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Select
             value={filterStorage}
             onValueChange={(v) => onFilterStorageChange(v as StorageLocation | 'all')}
@@ -123,6 +122,21 @@ export function ProjectList({
               <SelectItem value="out">Not in portfolio</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={sortBy} onValueChange={(v) => onSortByChange(v as ProjectSort)}>
+            <SelectTrigger
+              className="w-[150px] border-white/10 bg-white/5 text-white"
+              title="Sort order"
+            >
+              <ArrowUpDown className="h-3.5 w-3.5 opacity-60" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="border-white/10 bg-slate-900">
+              <SelectItem value="recent">Recently updated</SelectItem>
+              <SelectItem value="newest">Newest created</SelectItem>
+              <SelectItem value="oldest">Oldest updated</SelectItem>
+              <SelectItem value="name">Name A–Z</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -133,13 +147,11 @@ export function ProjectList({
 
       {/* Grid */}
       {projects.length === 0 ? (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-12 text-center">
-          <div className="mb-3 text-4xl">🔍</div>
-          <div className="text-base font-medium text-white/80">No matches</div>
-          <div className="mt-1 text-sm text-white/50">
-            Try adjusting your filters or search
-          </div>
-        </div>
+        <EmptyState
+          icon={<Search className="h-6 w-6" />}
+          title="No matches"
+          description="Try adjusting your filters or search to find what you're looking for."
+        />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {projects.map((p, i) => {
@@ -148,15 +160,28 @@ export function ProjectList({
             return (
               <motion.div
                 key={p.id}
+                layout
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04, duration: 0.25 }}
-                className="group relative flex flex-col rounded-xl border border-white/10 bg-white/5 p-4 transition hover:border-white/20 hover:bg-white/[0.07]"
+                transition={{ delay: Math.min(i, 8) * 0.04, duration: 0.25 }}
+                whileHover={{ y: -3 }}
+                className={`group relative flex flex-col rounded-xl border bg-white/5 p-4 shadow-lg shadow-transparent transition-colors duration-200 hover:border-violet-400/30 hover:bg-white/[0.07] hover:shadow-violet-500/10 ${
+                  p.inPortfolio
+                    ? 'border-amber-400/25 shadow-amber-500/5'
+                    : 'border-white/10'
+                }`}
               >
                 {/* Header */}
                 <div className="mb-2 flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-semibold text-white">{p.name}</h3>
+                    <button
+                      type="button"
+                      onClick={() => onOpenProject(p)}
+                      className="group/title -mx-0.5 block rounded-md px-0.5 text-left transition-colors duration-200 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/70 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-950"
+                      title="Open project details"
+                    >
+                      <h3 className="truncate font-semibold text-white transition-colors group-hover/title:text-violet-200">{p.name}</h3>
+                    </button>
                     <div className="mt-0.5 flex items-center gap-2 text-[11px] text-white/50">
                       <span
                         className="inline-flex items-center gap-1"
@@ -225,6 +250,43 @@ export function ProjectList({
                         +{p.tags.length - 4}
                       </span>
                     )}
+                  </div>
+                )}
+
+                {/* Notes — collapsible markdown */}
+                {p.notes && p.notes.trim() && (
+                  <div className="mb-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setNotesOpenId(notesOpenId === p.id ? null : p.id)
+                      }
+                      aria-expanded={notesOpenId === p.id}
+                      className="flex w-full items-center gap-1.5 rounded-lg border border-white/5 bg-white/[0.03] px-2.5 py-1.5 text-[11px] font-medium text-white/50 transition hover:border-violet-400/30 hover:bg-violet-500/5 hover:text-white/80"
+                    >
+                      <StickyNote className="h-3 w-3 shrink-0 text-violet-400/70" />
+                      Notes
+                      <ChevronDown
+                        className={`ml-auto h-3 w-3 shrink-0 transition-transform duration-200 ${
+                          notesOpenId === p.id ? 'rotate-180 text-violet-300' : ''
+                        }`}
+                      />
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {notesOpenId === p.id && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.22, ease: 'easeInOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div className="mt-2 max-h-64 overflow-y-auto rounded-lg border-l-2 border-violet-400/40 bg-black/25 px-3 py-2.5">
+                            <Markdown>{p.notes}</Markdown>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 )}
 

@@ -28,7 +28,7 @@ export const SEED_CAMPAIGNS: Campaign[] = [
     goalTarget: 5000,
     goalCurrent: 1240,
     linkedProjectIds: ['seed-1', 'seed-2'],  // Pulse Chat + Build Ledger
-    notes: 'Core launch. 14-hour sprint today, then daily follow-up content for 9 days.',
+    notes: '## Launch plan\n\nCore launch. **14-hour sprint** today, then daily follow-up content for 9 days.\n\n- [x] Landing page live\n- [x] Launch thread drafted\n- [ ] Email sequence to waitlist\n- [ ] Daily follow-up threads (×9)\n\n> Rule: every post links back to the hub.',
     color: '#8b5cf6',
     createdAt: T(2),
     updatedAt: T(0),
@@ -62,7 +62,7 @@ export const SEED_CAMPAIGNS: Campaign[] = [
     goalTarget: 20000,
     goalCurrent: 0,
     linkedProjectIds: ['seed-2'],
-    notes: 'Threads: (1) WS protocol design, (2) Tauri .exe pipeline, (3) Media handling, (4) Cross-machine deploy.',
+    notes: '## Thread outline\n\n- [ ] **Part 1** — WS protocol design\n- [ ] **Part 2** — Tauri .exe pipeline\n- [ ] **Part 3** — Media handling\n- [ ] **Part 4** — Cross-machine deploy\n\nEach thread ends with a repo link + `star it` CTA.',
     color: '#10b981',
     createdAt: T(3),
     updatedAt: T(2),

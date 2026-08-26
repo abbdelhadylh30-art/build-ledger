@@ -2,13 +2,15 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { X, Trash2, Save } from 'lucide-react'
+import { X, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
+import { DeleteButton } from './DeleteButton'
+import { MarkdownNotesEditor } from './MarkdownNotesEditor'
 import {
   Select,
   SelectContent,
@@ -359,18 +361,17 @@ export function ProjectForm({ onClose, onSubmit, onDelete, initial }: ProjectFor
             />
           </div>
 
-          {/* Notes */}
+          {/* Notes — markdown editor */}
           <div className="space-y-2">
-            <Label htmlFor="notes" className="text-white/80">
+            <Label htmlFor="notes" className="flex items-center gap-1.5 text-white/80">
               Notes
+              <span className="rounded-full bg-violet-500/15 px-1.5 py-px text-[9px] font-semibold uppercase tracking-wider text-violet-300">
+                Markdown
+              </span>
             </Label>
-            <Textarea
-              id="notes"
+            <MarkdownNotesEditor
               value={form.notes}
-              onChange={(e) => update('notes', e.target.value)}
-              placeholder="Anything to remember — gotchas, lessons, follow-ups..."
-              rows={2}
-              className="resize-none border-white/10 bg-white/5 text-white"
+              onChange={(v) => update('notes', v)}
             />
           </div>
 
@@ -392,17 +393,14 @@ export function ProjectForm({ onClose, onSubmit, onDelete, initial }: ProjectFor
         {/* Footer */}
         <div className="flex items-center justify-between gap-2 border-t border-white/10 px-6 py-4">
           {isEdit && onDelete ? (
-            <Button
-              variant="ghost"
-              onClick={() => {
+            <DeleteButton
+              entityLabel="project"
+              description={`"${form.name || 'This project'}" and all its details will be permanently removed from your ledger.`}
+              onConfirm={() => {
                 onDelete()
                 onClose()
               }}
-              className="text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
-            >
-              <Trash2 className="mr-1 h-4 w-4" />
-              Delete
-            </Button>
+            />
           ) : (
             <div />
           )}
