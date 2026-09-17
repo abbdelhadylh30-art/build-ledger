@@ -49,3 +49,4 @@ server.log
 
 # OS
 .DS_Store
+.vercel
