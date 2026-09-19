@@ -15,6 +15,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ledger.abdelhadygabriel.me"),
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Build Ledger — Projects + Campaigns Tracker",
+    description: "Local-first PWA for tracking the projects you build AND your marketing campaigns across social media.",
+    url: "https://ledger.abdelhadygabriel.me",
+    siteName: "Build Ledger",
+    type: "website",
+  },
   title: "Build Ledger — Projects + Campaigns Tracker",
   description:
     "Local-first PWA for tracking the projects you build AND your marketing campaigns across social media. Plan with a calendar, track engagement, hit your goals.",
