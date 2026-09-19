@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Build Ledger — Projects + Campaigns Tracker",
     description: "Local-first PWA for tracking the projects you build AND your marketing campaigns across social media.",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Build Ledger — Projects + Campaigns Tracker" }],
     url: "https://ledger.abdelhadygabriel.me",
     siteName: "Build Ledger",
     type: "website",
